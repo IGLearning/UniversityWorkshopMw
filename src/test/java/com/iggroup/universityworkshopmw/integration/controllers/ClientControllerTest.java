@@ -50,12 +50,14 @@ public class ClientControllerTest {
       ClientDto clientDto = ClientDto.builder()
          .id(null)
          .userName("userName")
-         .funds(null)
+         .availableFunds(null)
+         .runningProfitAndLoss(null)
          .build();
       Client clientAdded = Client.builder()
          .id("client_12345")
          .userName("username")
-         .funds(Double.valueOf(400))
+         .availableFunds(Double.valueOf(400))
+         .runningProfitAndLoss(0)
          .build();
       when(clientService.storeNewClient(any(Client.class))).thenReturn(clientAdded);
 
@@ -66,7 +68,8 @@ public class ClientControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", is("client_12345")))
-            .andExpect(jsonPath("$.funds", is(400.0)));
+            .andExpect(jsonPath("$.availableFunds", is(400.0)))
+            .andExpect(jsonPath("$.runningProfitAndLoss", is(0.0)));
 
       ArgumentCaptor<Client> clientArgumentCaptor = forClass(Client.class);
       verify(clientService, times(1)).storeNewClient(clientArgumentCaptor.capture());
@@ -74,7 +77,8 @@ public class ClientControllerTest {
 
       Client client = clientArgumentCaptor.getValue();
       assertNull(client.getId());
-      assertThat(client.getFunds(), is(0.0));
+      assertThat(client.getAvailableFunds(), is(0.0));
+      assertThat(client.getRunningProfitAndLoss(), is(0.0));
       assertThat(client.getUserName(), is("userName"));
    }
 
@@ -83,7 +87,8 @@ public class ClientControllerTest {
       ClientDto clientDto = ClientDto.builder()
          .id(null)
          .userName("userName")
-         .funds(null)
+         .availableFunds(null)
+         .runningProfitAndLoss(null)
          .build();
       when(clientService.storeNewClient(any(Client.class))).thenThrow(new RuntimeException("Server exception!"));
 
@@ -98,17 +103,25 @@ public class ClientControllerTest {
    }
 
    @Test
-   public void getClientFunds_returnsOkCodeAndClientFunds() throws Exception {
-      when(clientService.getFunds(anyString())).thenReturn(400.0);
+   public void getClient_returnsOkCodeAndClientData() throws Exception {
+      Client retrievedClient = Client.builder()
+            .id("client_12345")
+            .userName("username")
+            .availableFunds(Double.valueOf(400))
+            .runningProfitAndLoss(0)
+            .build();
+      when(clientService.getClientData(anyString())).thenReturn(retrievedClient);
 
-      MvcResult mvcResult = mockMvc.perform(get("/client/funds/client_12345"))
-            .andExpect(status().isOk()).andReturn();
-
-      final String content = mvcResult.getResponse().getContentAsString();
-      assertEquals("400.0", content);
+       mockMvc.perform(get("/client/client_12345"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+            .andExpect(jsonPath("$.id", is("client_12345")))
+            .andExpect(jsonPath("$.usermame", is("username")))
+            .andExpect(jsonPath("$.availableFunds", is(400.0)))
+            .andExpect(jsonPath("$.runningProfitAndLoss", is(0.0)));
 
       ArgumentCaptor<String> clientIdCaptor = forClass(String.class);
-      verify(clientService, times(1)).getFunds(clientIdCaptor.capture());
+      verify(clientService, times(1)).getClientData(clientIdCaptor.capture());
       verifyNoMoreInteractions(clientService);
 
       String id = clientIdCaptor.getValue();
@@ -116,21 +129,21 @@ public class ClientControllerTest {
    }
 
    @Test
-   public void getClientFunds_handlesAnyException_returnsServerErrorAndInfoString() throws Exception {
-      when(clientService.getFunds(anyString())).thenThrow(new RuntimeException("Server exception!"));
+   public void getClient_handlesAnyException_returnsServerErrorAndInfoString() throws Exception {
+      when(clientService.getClientData(anyString())).thenThrow(new RuntimeException("Server exception!"));
 
-      MvcResult mvcResult = mockMvc.perform(get("/client/funds/client_12345"))
+      MvcResult mvcResult = mockMvc.perform(get("/client/client_12345"))
             .andExpect(status().isInternalServerError()).andReturn();
 
       final String content = mvcResult.getResponse().getContentAsString();
-      assertEquals("Something went wrong when retrieving funds", content);
+      assertEquals("Something went wrong when retrieving client data", content);
    }
 
    @Test
-   public void getClientFunds_handlesNoAvailableDataException_returnsServerErrorAndInfoString() throws Exception {
-      when(clientService.getFunds(anyString())).thenThrow(new NoAvailableDataException("No available data!"));
+   public void getClient_handlesNoAvailableDataException_returnsServerErrorAndInfoString() throws Exception {
+      when(clientService.getClientData(anyString())).thenThrow(new NoAvailableDataException("No available data!"));
 
-      MvcResult mvcResult = mockMvc.perform(get("/client/funds/client_12345"))
+      MvcResult mvcResult = mockMvc.perform(get("/client/client_12345"))
             .andExpect(status().isNotFound()).andReturn();
 
       final String content = mvcResult.getResponse().getContentAsString();

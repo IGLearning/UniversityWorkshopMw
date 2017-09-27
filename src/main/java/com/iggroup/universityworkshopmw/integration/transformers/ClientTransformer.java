@@ -6,12 +6,16 @@ import com.iggroup.universityworkshopmw.integration.dto.ClientDto;
 public class ClientTransformer {
 
    public static Client transform(ClientDto clientDto) {
-      Double funds = clientDto.getFunds();
-      Double safeFunds = new Double( null == funds ? "0" : funds.toString() );
+      Double availableFunds = clientDto.getAvailableFunds();
+      Double profitAndLoss = clientDto.getRunningProfitAndLoss();
+      Double safeAvailableFunds = new Double( null == availableFunds ? "0" : availableFunds.toString() );
+      Double safeProfitAndLoss = new Double( null == profitAndLoss ? "0" : profitAndLoss.toString() );
+
       return Client.builder()
          .id(clientDto.getId())
          .userName(clientDto.getUserName())
-         .funds(safeFunds)
+         .availableFunds(safeAvailableFunds)
+         .runningProfitAndLoss(safeProfitAndLoss)
          .build();
    }
 

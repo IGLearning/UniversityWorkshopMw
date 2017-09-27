@@ -22,26 +22,33 @@ public class ClientService {
       Client enrichedClient = Client.builder()
          .id(uniqueId)
          .userName(client.getUserName())
-         .funds(INITIAL_FUNDS)
+         .availableFunds(INITIAL_FUNDS)
+         .runningProfitAndLoss(0)
          .build();
       clientIdToClientModelMap.put(uniqueId, enrichedClient);
       log.info("Added new client={}", enrichedClient);
       return enrichedClient;
    }
 
-   public double getFunds(String clientId) throws NoAvailableDataException {
+   public Client getClientData(String clientId) throws NoAvailableDataException {
       Client client = getClientDataFromMap(clientId);
-      double funds = client.getFunds();
-      log.info("Retrieving funds={} for clientId={}", funds, clientId);
-      return funds;
+      log.info("Retrieving client data={} for clientId={}", client, clientId);
+      return client;
    }
 
-   public void updateFunds(String clientId, double updatedFunds) throws NoAvailableDataException {
+   public void updateAvailableFunds(String clientId, double updatedAvailableFunds) throws NoAvailableDataException {
       Client client = getClientDataFromMap(clientId);
-      log.info("Updating updatedFunds for clientId={}, oldFunds={}, updatedFunds={}", clientId, client.getFunds(), updatedFunds);
-      client.setFunds(updatedFunds);
+      log.info("Updating updatedAvailableFunds for clientId={}, oldAvailableFunds={}, updatedAvailableFunds={}", clientId, client.getAvailableFunds(), updatedAvailableFunds);
+      client.setAvailableFunds(updatedAvailableFunds);
       clientIdToClientModelMap.put(clientId, client);
    }
+
+//   public void updateRunningProfitAndLoss(String clientId, double updatedProfitAndLoss) throws NoAvailableDataException {
+//      Client client = getClientDataFromMap(clientId);
+//      log.info("Updating updatedProfitAndLoss for clientId={}, oldAvailableFunds={}, updatedProfitAndLoss={}", clientId, client.getAvailableFunds(), updatedProfitAndLoss);
+//      client.setAvailableFunds(updatedProfitAndLoss);
+//      clientIdToClientModelMap.put(clientId, client);
+//   }
 
    Client getClientDataFromMap(String clientId) throws NoAvailableDataException {
       if (clientIdToClientModelMap.containsKey(clientId)) {

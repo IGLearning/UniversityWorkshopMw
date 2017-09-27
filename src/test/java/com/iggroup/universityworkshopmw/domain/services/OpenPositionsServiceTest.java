@@ -150,7 +150,7 @@ public class OpenPositionsServiceTest {
       when(clientService.getClientDataFromMap("client_1")).thenReturn(Client.builder()
          .id("client_1")
          .userName("username")
-         .funds(1)
+         .availableFunds(1)
          .build());
 
       openPositionsService.addOpenPositionForClient("client_1", openPosition1);
@@ -248,7 +248,8 @@ public class OpenPositionsServiceTest {
       return Client.builder()
          .id(clientId)
          .userName("username")
-         .funds(12345)
+         .availableFunds(12345)
+         .runningProfitAndLoss(500)
          .build();
    }
 

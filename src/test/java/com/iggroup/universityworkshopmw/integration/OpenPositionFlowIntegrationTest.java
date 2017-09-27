@@ -51,7 +51,7 @@ public class OpenPositionFlowIntegrationTest {
          .andReturn();
 
       verify(openPositionsService, times(1)).addOpenPositionForClient(client.getId(), transform(openPositionDto));
-      verify(clientService, times(1)).updateFunds(client.getId(), 10000.00);
+      verify(clientService, times(1)).updateAvailableFunds(client.getId(), 10000.00);
    }
 
    @Test
@@ -71,7 +71,7 @@ public class OpenPositionFlowIntegrationTest {
 
       assertEquals(content, "4000.0");
       verify(openPositionsService, times(1)).closeOpenPosition(client.getId(), openPositionWithId.getId(), 500.0);
-      verify(clientService, times(1)).updateFunds(client.getId(), 14000.0);
+      verify(clientService, times(1)).updateAvailableFunds(client.getId(), 14000.0);
    }
 
    @Test
@@ -96,7 +96,8 @@ public class OpenPositionFlowIntegrationTest {
    private Client createClient() {
       return Client.builder()
          .id("client_1")
-         .funds(10000)
+         .availableFunds(10000)
+         .runningProfitAndLoss(10000)
          .userName("username")
          .build();
    }

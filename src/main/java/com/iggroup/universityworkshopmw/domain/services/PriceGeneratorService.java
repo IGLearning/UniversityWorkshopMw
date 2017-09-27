@@ -42,7 +42,7 @@ public class PriceGeneratorService {
          );
          marketIdsUpdated.add(id);
 
-         log.info("Updated market price for id={}, oldPrice={}, newPrice={}, normalDist={}", id, oldPrice, newMarketPrice, (newMarketPrice - oldPrice));
+//         log.info("Updated market price for id={}, oldPrice={}, newPrice={}, normalDist={}", id, oldPrice, newMarketPrice, (newMarketPrice - oldPrice));
       });
 
    }

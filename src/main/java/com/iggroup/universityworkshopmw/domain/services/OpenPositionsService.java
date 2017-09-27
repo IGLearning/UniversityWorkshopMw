@@ -39,10 +39,11 @@ public class OpenPositionsService {
       double positionPrice = newOpenPosition.getBuySize() * newOpenPosition.getOpeningPrice();
       List<OpenPosition> openPositionsForClient = clientPositionStore.get(clientId);
 
-      double clientFunds = checkClientFunds(clientId, positionPrice);
+      double clientAvailableFunds = checkClientAvailableFunds(clientId, positionPrice);
       OpenPosition openPositionWithId = updateStoreWithNewPosition(clientId, newOpenPosition, openPositionsForClient);
 
-      clientService.updateFunds(clientId, clientFunds);
+//      clientService.updateFunds(clientId, clientAvailableFunds);
+      // TODO: 27/09/2017 Update available funds and profit and loss?
       return openPositionWithId;
    }
 
@@ -96,13 +97,13 @@ public class OpenPositionsService {
       return (newValue - openingPrice) * buySize;
    }
 
-   private double checkClientFunds(String clientId, double positionPrice) throws NoAvailableDataException, InsufficientFundsException {
+   private double checkClientAvailableFunds(String clientId, double positionPrice) throws NoAvailableDataException, InsufficientFundsException {
       Client client = clientService.getClientDataFromMap(clientId);
 
-      if (client.getFunds() < positionPrice) {
+      if (client.getAvailableFunds() < positionPrice) {
          throw new InsufficientFundsException("Client: " + clientId + " lacks sufficient funds to place that trade");
       }
-      return client.getFunds();
+      return client.getAvailableFunds();
    }
 
    private OpenPosition updateStoreWithNewPosition(String clientId, OpenPosition newOpenPosition, List<OpenPosition> openPositionsForClient) {
@@ -124,7 +125,8 @@ public class OpenPositionsService {
 
    private void updateClientFunds(String clientId, double closingProfitAndLoss) throws NoAvailableDataException {
       Client client = clientService.getClientDataFromMap(clientId);
-      double updatedFunds = client.getFunds() + closingProfitAndLoss;
-      clientService.updateFunds(clientId, updatedFunds);
+      double updatedFunds = client.getAvailableFunds() + closingProfitAndLoss;
+      clientService.updateAvailableFunds(clientId, updatedFunds);
+      // TODO: 27/09/2017 Need to probably update available and running profit and losS?
    }
 }
