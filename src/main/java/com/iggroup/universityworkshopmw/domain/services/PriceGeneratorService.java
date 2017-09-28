@@ -26,7 +26,6 @@ public class PriceGeneratorService {
    @Scheduled(fixedRate = 1000)
    private void updateMarketPrices() {
       List<Map.Entry<String, Market>> updateSubList = marketDataService.getShuffledMapSubset();
-      List<String> marketIdsUpdated = new ArrayList<>();
 
       updateSubList.stream().forEach(entry -> {
          Market entryValue = entry.getValue();
@@ -40,7 +39,6 @@ public class PriceGeneratorService {
                .currentPrice(newMarketPrice)
                .build()
          );
-         marketIdsUpdated.add(id);
 
 //         log.info("Updated market price for id={}, oldPrice={}, newPrice={}, normalDist={}", id, oldPrice, newMarketPrice, (newMarketPrice - oldPrice));
       });

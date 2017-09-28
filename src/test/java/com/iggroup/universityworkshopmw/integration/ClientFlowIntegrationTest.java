@@ -19,11 +19,9 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static com.iggroup.universityworkshopmw.TestHelper.APPLICATION_JSON_UTF8;
 import static com.iggroup.universityworkshopmw.TestHelper.convertObjectToJsonBytes;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -65,7 +63,7 @@ public class ClientFlowIntegrationTest {
       assertClient(clientId, content);
       final String contentException = mockClientDataException();
 
-      assertEquals("No available client data for clientId=client_12345", contentException);
+      assertThat(contentException).isEqualTo("No available client data for clientId=client_12345");
    }
 
    private String mockClientDataException() throws Exception {
@@ -78,13 +76,14 @@ public class ClientFlowIntegrationTest {
    }
 
    private void assertClient(String clientId, String content) throws NoAvailableDataException {
-      assertEquals("10000.0", content);
+      assertThat(content).contains("10000.0");
+      assertThat(content).contains("0.0");
 
       ArgumentCaptor<String> clientIdCaptor = ArgumentCaptor.forClass(String.class);
       verify(clientService, times(1)).getClientData(clientIdCaptor.capture());
 
       String capturedClientId = clientIdCaptor.getValue();
-      assertThat(capturedClientId, is(clientId));
+      assertThat(capturedClientId).isEqualTo(clientId);
    }
 
    private String mockGetClient(String clientId) throws Exception {
@@ -104,10 +103,10 @@ public class ClientFlowIntegrationTest {
       verify(clientService, times(1)).storeNewClient(clientArgumentCaptor.capture());
       verifyNoMoreInteractions(clientService);
       Client client = clientArgumentCaptor.getValue();
-      assertNull(client.getId());
-      assertThat(client.getAvailableFunds(), is(0.0));
-      assertThat(client.getRunningProfitAndLoss(), is(0.0));
-      assertThat(client.getUserName(), is("userName"));
+      assertThat(client.getId()).isNull();
+      assertThat(client.getAvailableFunds()).isEqualTo(0.0);
+      assertThat(client.getRunningProfitAndLoss()).isEqualTo(0.0);
+      assertThat(client.getUserName()).isEqualTo("userName");
    }
 
    private String mockCreateClient(ClientDto clientDto) throws Exception {
@@ -119,7 +118,8 @@ public class ClientFlowIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", containsString("client_")))
-            .andExpect(jsonPath("$.availableFunds", is(10000.0))).andReturn();
+            .andExpect(jsonPath("$.availableFunds", is(10000.0)))
+            .andExpect(jsonPath("$.runningProfitAndLoss", is(0.0))).andReturn();
 
       clientId = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.id");
       return clientId;

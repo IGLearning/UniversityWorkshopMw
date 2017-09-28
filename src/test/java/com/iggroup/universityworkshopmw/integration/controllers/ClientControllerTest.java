@@ -116,7 +116,7 @@ public class ClientControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", is("client_12345")))
-            .andExpect(jsonPath("$.usermame", is("username")))
+            .andExpect(jsonPath("$.userName", is("username")))
             .andExpect(jsonPath("$.availableFunds", is(400.0)))
             .andExpect(jsonPath("$.runningProfitAndLoss", is(0.0)));
 

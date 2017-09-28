@@ -1,7 +1,7 @@
 package com.iggroup.universityworkshopmw.domain.services;
 
-import com.iggroup.universityworkshopmw.domain.helpers.Helper;
 import com.iggroup.universityworkshopmw.domain.exceptions.NoAvailableDataException;
+import com.iggroup.universityworkshopmw.domain.helpers.Helper;
 import com.iggroup.universityworkshopmw.domain.model.Client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -38,23 +38,32 @@ public class ClientService {
 
    public void updateAvailableFunds(String clientId, double updatedAvailableFunds) throws NoAvailableDataException {
       Client client = getClientDataFromMap(clientId);
-      log.info("Updating updatedAvailableFunds for clientId={}, oldAvailableFunds={}, updatedAvailableFunds={}", clientId, client.getAvailableFunds(), updatedAvailableFunds);
-      client.setAvailableFunds(updatedAvailableFunds);
-      clientIdToClientModelMap.put(clientId, client);
+      updatingAvailableFunds(updatedAvailableFunds, client);
    }
 
-//   public void updateRunningProfitAndLoss(String clientId, double updatedProfitAndLoss) throws NoAvailableDataException {
-//      Client client = getClientDataFromMap(clientId);
-//      log.info("Updating updatedProfitAndLoss for clientId={}, oldAvailableFunds={}, updatedProfitAndLoss={}", clientId, client.getAvailableFunds(), updatedProfitAndLoss);
-//      client.setAvailableFunds(updatedProfitAndLoss);
-//      clientIdToClientModelMap.put(clientId, client);
-//   }
+   public void updateRunningProfitAndLoss(String clientId, double sumOfPositionProfitAndLoss) throws NoAvailableDataException {
+      Client client = getClientDataFromMap(clientId);
+      double oldProfitAndLoss = client.getRunningProfitAndLoss();
 
-   Client getClientDataFromMap(String clientId) throws NoAvailableDataException {
+      log.info("Updating runningProfitAndLoss for clientId={}, oldProfitAndLoss={}, updatedProfitAndLoss={}", clientId, oldProfitAndLoss, sumOfPositionProfitAndLoss);
+      client.setRunningProfitAndLoss(sumOfPositionProfitAndLoss);
+      clientIdToClientModelMap.put(clientId, client);
+
+      double newAvailableFunds = (client.getAvailableFunds() - oldProfitAndLoss) + sumOfPositionProfitAndLoss;
+      updatingAvailableFunds(newAvailableFunds, client);
+   }
+
+   private Client getClientDataFromMap(String clientId) throws NoAvailableDataException {
       if (clientIdToClientModelMap.containsKey(clientId)) {
          return clientIdToClientModelMap.get(clientId);
       } else {
          throw new NoAvailableDataException("No available client data in clientIdToClientModelMap for clientId=" + clientId);
       }
+   }
+
+   private void updatingAvailableFunds(double updatedAvailableFunds, Client client) {
+      log.info("Updating availableFunds for clientId={}, oldAvailableFunds={}, updatedAvailableFunds={}", client.getId(), client.getAvailableFunds(), updatedAvailableFunds);
+      client.setAvailableFunds(updatedAvailableFunds);
+      clientIdToClientModelMap.put(client.getId(), client);
    }
 }
