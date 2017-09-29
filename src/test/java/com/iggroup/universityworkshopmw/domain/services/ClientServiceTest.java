@@ -1,5 +1,6 @@
 package com.iggroup.universityworkshopmw.domain.services;
 
+import com.iggroup.universityworkshopmw.domain.exceptions.DuplicatedDataException;
 import com.iggroup.universityworkshopmw.domain.exceptions.NoAvailableDataException;
 import com.iggroup.universityworkshopmw.domain.model.Client;
 import org.junit.Before;
@@ -17,7 +18,7 @@ public class ClientServiceTest {
    }
 
    @Test
-   public void storeNewClient_assignsUniqueIdPerAddition() {
+   public void storeNewClient_assignsUniqueIdPerAddition() throws DuplicatedDataException {
       Client client1 = createClient("", "userName1", 0, 0);
       Client client2 = createClient("", "userName2", 0, 0);
 
@@ -30,7 +31,7 @@ public class ClientServiceTest {
    }
 
    @Test
-   public void storeNewClient_setsCorrectInitialValues() {
+   public void storeNewClient_setsCorrectInitialValues() throws DuplicatedDataException {
       Client client1 = createClient("", "userName1", 0, 0);
 
       Client returnClient1 = clientService.storeNewClient(client1);
@@ -39,8 +40,16 @@ public class ClientServiceTest {
       assertThat(returnClient1.getRunningProfitAndLoss()).isEqualTo(0);
    }
 
+   @Test(expected = DuplicatedDataException.class)
+   public void storeNewClient_handlesSameUsernameInMap() throws DuplicatedDataException {
+      Client client1 = createClient("", "userName1", 0, 0);
+      clientService.storeNewClient(client1);
+
+      clientService.storeNewClient(client1);
+   }
+
    @Test
-   public void getClientData_getsDataForClientId() throws NoAvailableDataException {
+   public void getClientData_getsDataForClientId() throws NoAvailableDataException, DuplicatedDataException {
       final Client expected = createClient("", "userName1", 0, 0);
       Client returnClient1 = clientService.storeNewClient(expected);
       String clientId = returnClient1.getId();
@@ -59,7 +68,7 @@ public class ClientServiceTest {
    }
 
    @Test
-   public void updateAvailableFunds_updatesAvailableFunds() throws NoAvailableDataException {
+   public void updateAvailableFunds_updatesAvailableFunds() throws NoAvailableDataException, DuplicatedDataException {
       Client returnClient1 = clientService.storeNewClient(createClient("", "userName1", 0, 0));
       String clientId = returnClient1.getId();
       double availableFunds = returnClient1.getAvailableFunds();
@@ -79,7 +88,7 @@ public class ClientServiceTest {
    }
 
    @Test
-   public void updateRunningProfitAndLoss_updatesAvailableFundsAndRunningProfitAndLoss() throws NoAvailableDataException {
+   public void updateRunningProfitAndLoss_updatesAvailableFundsAndRunningProfitAndLoss() throws NoAvailableDataException, DuplicatedDataException {
       Client client = clientService.storeNewClient(createClient("", "userName1", 0, 0));
       String clientId = client.getId();
       double initialAvailableFunds = client.getAvailableFunds();

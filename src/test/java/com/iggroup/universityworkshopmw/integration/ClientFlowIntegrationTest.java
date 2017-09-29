@@ -1,5 +1,6 @@
 package com.iggroup.universityworkshopmw.integration;
 
+import com.iggroup.universityworkshopmw.domain.exceptions.DuplicatedDataException;
 import com.iggroup.universityworkshopmw.domain.exceptions.NoAvailableDataException;
 import com.iggroup.universityworkshopmw.domain.model.Client;
 import com.iggroup.universityworkshopmw.domain.services.ClientService;
@@ -98,7 +99,7 @@ public class ClientFlowIntegrationTest {
       return mvcResultFunds.getResponse().getContentAsString();
    }
 
-   private void assertClient() {
+   private void assertClient() throws DuplicatedDataException {
       ArgumentCaptor<Client> clientArgumentCaptor = ArgumentCaptor.forClass(Client.class);
       verify(clientService, times(1)).storeNewClient(clientArgumentCaptor.capture());
       verifyNoMoreInteractions(clientService);

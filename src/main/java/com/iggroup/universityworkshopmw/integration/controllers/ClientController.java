@@ -1,5 +1,6 @@
 package com.iggroup.universityworkshopmw.integration.controllers;
 
+import com.iggroup.universityworkshopmw.domain.exceptions.DuplicatedDataException;
 import com.iggroup.universityworkshopmw.domain.exceptions.NoAvailableDataException;
 import com.iggroup.universityworkshopmw.domain.model.Client;
 import com.iggroup.universityworkshopmw.domain.services.ClientService;
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,6 +55,11 @@ public class ClientController {
          Client clientTransformed = ClientTransformer.transform(clientDto);
          ClientDto responseBody = ClientDtoTransformer.transform(clientService.storeNewClient(clientTransformed));
          return new ResponseEntity<>(responseBody, OK);
+
+      } catch (DuplicatedDataException e) {
+         String userName = clientDto.getUserName();
+         log.info("Duplicated username={}, exceptionMessage={}", userName, e);
+         return new ResponseEntity<>("Username=" + userName + " is already used. Please create another one", HttpStatus.BAD_REQUEST);
 
       } catch (Exception e) {
          log.info("Exception when creating new client, exceptionMessage={}", e);
