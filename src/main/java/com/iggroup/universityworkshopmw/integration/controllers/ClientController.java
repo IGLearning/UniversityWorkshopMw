@@ -1,5 +1,6 @@
 package com.iggroup.universityworkshopmw.integration.controllers;
 
+import com.iggroup.universityworkshopmw.domain.exceptions.DuplicatedDataException;
 import com.iggroup.universityworkshopmw.domain.exceptions.NoAvailableDataException;
 import com.iggroup.universityworkshopmw.domain.model.Client;
 import com.iggroup.universityworkshopmw.domain.services.ClientService;
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,35 +56,42 @@ public class ClientController {
          ClientDto responseBody = ClientDtoTransformer.transform(clientService.storeNewClient(clientTransformed));
          return new ResponseEntity<>(responseBody, OK);
 
+      } catch (DuplicatedDataException e) {
+         String userName = clientDto.getUserName();
+         log.info("Duplicated username={}, exceptionMessage={}", userName, e);
+         return new ResponseEntity<>("Username=" + userName + " is already used. Please create another one", HttpStatus.BAD_REQUEST);
+
       } catch (Exception e) {
          log.info("Exception when creating new client, exceptionMessage={}", e);
          return new ResponseEntity<>("Something went wrong when creating a new client", INTERNAL_SERVER_ERROR);
       }
    }
 
-   @ApiOperation(value = "Get funds",
-      notes = "Returns the funds for a single client based on client Id")
+   @ApiOperation(value = "Get a client",
+         notes = "Gets data for a single client",
+         response = ClientDto.class)
    @ApiResponses(value = {
-      @ApiResponse(code = HTTP_OK,
-         message = "Successfully retrieved funds"),
-      @ApiResponse(code = HTTP_BAD_REQUEST,
-         message = "Couldn't find funds for client"),
-      @ApiResponse(code = HTTP_BAD_GATEWAY,
-         message = "Couldn't retrieve funds for client")
+         @ApiResponse(code = HTTP_OK,
+               message = "Successfully retrieved client data"),
+         @ApiResponse(code = HTTP_BAD_REQUEST,
+               message = "Couldn't recognise request"),
+         @ApiResponse(code = HTTP_BAD_GATEWAY,
+               message = "Couldn't get client data")
    })
-   @GetMapping("/funds/{clientId}")
-   public ResponseEntity<?> getClientFunds(@PathVariable("clientId") String clientId) {
+   @GetMapping("/{clientId}")
+   public ResponseEntity<?> getClient(@PathVariable("clientId") String clientId) {
       try {
-         double funds = clientService.getFunds(clientId);
-         return new ResponseEntity<>(funds, OK);
+         ClientDto responseBody = ClientDtoTransformer.transform(clientService.getClientData(clientId));
+         return new ResponseEntity<>(responseBody, OK);
 
       } catch (NoAvailableDataException e) {
          log.info("No available client data in clientIdToClientModelMap for clientId={}", clientId);
          return new ResponseEntity<>("No available client data for clientId=" + clientId, NOT_FOUND);
 
       } catch (Exception e) {
-         log.info("Exception when retrieving funds, exceptionMessage={}", e);
-         return new ResponseEntity<>("Something went wrong when retrieving funds", INTERNAL_SERVER_ERROR);
+         log.info("Exception when retrieving client data, exceptionMessage={}", e);
+         return new ResponseEntity<>("Something went wrong when retrieving client data", INTERNAL_SERVER_ERROR);
       }
    }
+
 }

@@ -16,12 +16,14 @@ public class ClientTransformerTest {
       ClientDto clientDto = ClientDto.builder()
          .id("client_12345")
          .userName("userName")
-         .funds(Double.valueOf(400))
+         .availableFunds(Double.valueOf(400))
+         .runningProfitAndLoss(Double.valueOf(400))
          .build();
       Client client = ClientTransformer.transform(clientDto);
       assertEquals(clientDto.getId(), client.getId());
       assertEquals(clientDto.getUserName(), client.getUserName());
-      assertThat(clientDto.getFunds().doubleValue(), is(client.getFunds()));
+      assertThat(clientDto.getAvailableFunds().doubleValue(), is(client.getAvailableFunds()));
+      assertThat(clientDto.getRunningProfitAndLoss().doubleValue(), is(client.getRunningProfitAndLoss()));
    }
 
    @Test
@@ -29,12 +31,14 @@ public class ClientTransformerTest {
       ClientDto clientDto = ClientDto.builder()
          .id(null)
          .userName(null)
-         .funds(null)
+         .availableFunds(null)
+         .runningProfitAndLoss(null)
          .build();
       Client client = ClientTransformer.transform(clientDto);
       assertNull(client.getId());
       assertNull(client.getUserName());
-      assertThat(Double.valueOf(0).doubleValue(), is(client.getFunds()));
+      assertThat(Double.valueOf(0).doubleValue(), is(client.getAvailableFunds()));
+      assertThat(Double.valueOf(0).doubleValue(), is(client.getRunningProfitAndLoss()));
    }
 
    @Test
@@ -42,12 +46,14 @@ public class ClientTransformerTest {
       Client client = Client.builder()
          .id("client_12345")
          .userName("userName")
-         .funds(Double.valueOf(400))
+         .availableFunds(Double.valueOf(400))
+         .runningProfitAndLoss(Double.valueOf(400))
          .build();
       ClientDto clientDto = ClientDtoTransformer.transform(client);
       assertEquals(client.getId(), clientDto.getId());
       assertEquals(client.getUserName(), clientDto.getUserName());
-      assertThat(Double.valueOf(client.getFunds()), is(clientDto.getFunds()));
+      assertThat(Double.valueOf(client.getAvailableFunds()), is(clientDto.getAvailableFunds()));
+      assertThat(Double.valueOf(client.getRunningProfitAndLoss()), is(clientDto.getRunningProfitAndLoss()));
    }
 
    @Test
@@ -55,11 +61,13 @@ public class ClientTransformerTest {
       Client client = Client.builder()
          .id("client_1235")
          .userName(null)
-         .funds(Double.valueOf(400))
+         .availableFunds(Double.valueOf(400))
+         .runningProfitAndLoss(Double.valueOf(400))
          .build();
       ClientDto clientDto = ClientDtoTransformer.transform(client);
       assertEquals(client.getId(), clientDto.getId());
       assertNull(client.getUserName(), clientDto.getUserName());
-      assertThat(client.getFunds(), is(Double.valueOf(client.getFunds())));
+      assertThat(client.getRunningProfitAndLoss(), is(Double.valueOf(client.getRunningProfitAndLoss())));
+      assertThat(client.getAvailableFunds(), is(Double.valueOf(client.getAvailableFunds())));
    }
 }

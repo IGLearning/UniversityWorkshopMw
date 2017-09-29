@@ -6,15 +6,20 @@ import com.iggroup.universityworkshopmw.domain.model.Client;
 import com.iggroup.universityworkshopmw.domain.model.OpenPosition;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.is;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.*;
+import static com.iggroup.universityworkshopmw.domain.helpers.Helper.createUniqueId;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class OpenPositionsServiceTest {
@@ -31,7 +36,7 @@ public class OpenPositionsServiceTest {
    }
 
    @Test
-   public void openPositionsAreCorrectForClient() throws Exception{
+   public void openPositionsAreCorrectForClient() throws Exception {
       initialiseClientPositions();
       List<OpenPosition> openPositions = openPositionsService.getOpenPositionsForClient("client_2");
 
@@ -42,30 +47,30 @@ public class OpenPositionsServiceTest {
 
    @Test(expected = NoAvailableDataException.class)
    public void getShouldReturnNullIfClientHasNoOpenPositions() throws Exception {
-      assertNull(openPositionsService.getOpenPositionsForClient("client_1"));
+      assertThat(openPositionsService.getOpenPositionsForClient("client_1")).isNull();
    }
 
    @Test
    public void shouldAddOpenPositionsForClientWithNoPositions() throws Exception {
-      when(clientService.getClientDataFromMap("client_1")).thenReturn(createClient("client_1"));
+      when(clientService.getClientData("client_1")).thenReturn(createClient("client_1"));
 
       openPositionsService.addOpenPositionForClient("client_1", openPosition1);
 
       List<OpenPosition> positions = asList(openPosition1);
       List<OpenPosition> clientPositions = openPositionsService.getOpenPositionsForClient("client_1");
       IntStream.range(0, clientPositions.size())
-         .forEach(idx -> {
-            try {
-               assertOpenPosition(clientPositions.get(idx), positions.get(idx));
-            } catch (Exception e) {
-               e.printStackTrace();
-            }
-         });
+            .forEach(idx -> {
+               try {
+                  assertOpenPosition(clientPositions.get(idx), positions.get(idx));
+               } catch (Exception e) {
+                  e.printStackTrace();
+               }
+            });
    }
 
    @Test
    public void shouldAddNewPositionForClientWithExistingPositions() throws Exception {
-      when(clientService.getClientDataFromMap("client_3")).thenReturn(createClient("client_3"));
+      when(clientService.getClientData("client_3")).thenReturn(createClient("client_3"));
 
       openPositionsService.addOpenPositionForClient("client_3", openPosition1);
       openPositionsService.addOpenPositionForClient("client_3", openPosition4);
@@ -76,6 +81,30 @@ public class OpenPositionsServiceTest {
       assertOpenPosition(clientPositions.get(1), openPosition4);
    }
 
+   @Test(expected = InsufficientFundsException.class)
+   public void shouldThrowExceptionIfClientLacksFundsToTrade() throws Exception {
+      when(clientService.getClientData("client_1")).thenReturn(Client.builder()
+            .id("client_1")
+            .userName("username")
+            .availableFunds(1)
+            .build());
+
+      openPositionsService.addOpenPositionForClient("client_1", openPosition1);
+   }
+
+   @Test
+   public void addOpenPositionForClient_updatedAvailableFunds() throws NoAvailableDataException {
+      when(clientService.getClientData("client_3")).thenReturn(createClient("client_3"));
+
+      openPositionsService.addOpenPositionForClient("client_3", openPosition1);
+
+      ArgumentCaptor<Double> availableFundsCaptor = ArgumentCaptor.forClass(Double.class);
+      ArgumentCaptor<String> clientIdCaptor = ArgumentCaptor.forClass(String.class);
+      verify(clientService, times(1)).updateAvailableFunds(clientIdCaptor.capture(), availableFundsCaptor.capture());
+      assertThat(clientIdCaptor.getValue()).isEqualTo("client_3");
+      assertThat(availableFundsCaptor.getValue()).isEqualTo(11145.0);
+   }
+
    @Test
    public void shouldUpdateProfitAndLossForAllClientsWhenPriceIncreases() throws Exception {
       initialiseClientPositions();
@@ -84,8 +113,8 @@ public class OpenPositionsServiceTest {
       List<OpenPosition> client1Positions = openPositionsService.getOpenPositionsForClient("client_1");
       List<OpenPosition> client2Positions = openPositionsService.getOpenPositionsForClient("client_2");
 
-      assertThat(client1Positions.get(1).getProfitAndLoss(), is(60.00));
-      assertThat(client2Positions.get(1).getProfitAndLoss(), is(60.00));
+      assertThat(client1Positions.get(1).getProfitAndLoss()).isEqualTo(60.00);
+      assertThat(client2Positions.get(1).getProfitAndLoss()).isEqualTo(60.00);
    }
 
    @Test
@@ -96,8 +125,8 @@ public class OpenPositionsServiceTest {
       List<OpenPosition> client1Positions = openPositionsService.getOpenPositionsForClient("client_1");
       List<OpenPosition> client2Positions = openPositionsService.getOpenPositionsForClient("client_2");
 
-      assertThat(client1Positions.get(1).getProfitAndLoss(), is(-40.00));
-      assertThat(client2Positions.get(1).getProfitAndLoss(), is(-40.00));
+      assertThat(client1Positions.get(1).getProfitAndLoss()).isEqualTo(-40.00);
+      assertThat(client2Positions.get(1).getProfitAndLoss()).isEqualTo(-40.00);
    }
 
    @Test
@@ -108,8 +137,8 @@ public class OpenPositionsServiceTest {
       openPositionsService.updateMarketPrice("market_1", 200.00);
       List<OpenPosition> openPositions = openPositionsService.getOpenPositionsForClient("client_1");
 
-      assertThat(openPositions.get(0).getProfitAndLoss(), is(1200.00));
-      assertThat(openPositions.get(2).getProfitAndLoss(), is(-600.00));
+      assertThat(openPositions.get(0).getProfitAndLoss()).isEqualTo(1200.00);
+      assertThat(openPositions.get(2).getProfitAndLoss()).isEqualTo(-600.00);
    }
 
    @Test
@@ -123,10 +152,10 @@ public class OpenPositionsServiceTest {
       List<OpenPosition> client1Positions = openPositionsService.getOpenPositionsForClient("client_1");
       List<OpenPosition> client2Positions = openPositionsService.getOpenPositionsForClient("client_2");
 
-      assertThat(client1Positions.get(0).getProfitAndLoss(), is(1200.00));
-      assertThat(client1Positions.get(2).getProfitAndLoss(), is(-600.00));
-      assertThat(client2Positions.get(3).getProfitAndLoss(), is(-600.00));
-      assertThat(client2Positions.get(4).getProfitAndLoss(), is(1200.00));
+      assertThat(client1Positions.get(0).getProfitAndLoss()).isEqualTo(1200.00);
+      assertThat(client1Positions.get(2).getProfitAndLoss()).isEqualTo(-600.00);
+      assertThat(client2Positions.get(3).getProfitAndLoss()).isEqualTo(-600.00);
+      assertThat(client2Positions.get(4).getProfitAndLoss()).isEqualTo(1200.00);
    }
 
    @Test
@@ -140,20 +169,9 @@ public class OpenPositionsServiceTest {
       Double finalProfitAndLoss = openPositionsService.closeOpenPosition("client_1", clientPositions.get(0).getId(), 200.00);
       clientPositions = openPositionsService.getOpenPositionsForClient("client_1");
 
-      assertThat(finalProfitAndLoss, is(1200.00));
+      assertThat(finalProfitAndLoss).isEqualTo(1200.00);
       assertOpenPosition(clientPositions.get(0), openPosition2);
-      assertFalse(clientPositions.contains(openPosition1));
-   }
-
-   @Test(expected = InsufficientFundsException.class)
-   public void shouldThrowExceptionIfClientLacksFundsToTrade() throws Exception {
-      when(clientService.getClientDataFromMap("client_1")).thenReturn(Client.builder()
-         .id("client_1")
-         .userName("username")
-         .funds(1)
-         .build());
-
-      openPositionsService.addOpenPositionForClient("client_1", openPosition1);
+      assertThat(clientPositions.contains(openPosition1)).isFalse();
    }
 
    @Test(expected = NoAvailableDataException.class)
@@ -161,102 +179,137 @@ public class OpenPositionsServiceTest {
       openPositionsService.closeOpenPosition("client_1", "made_up_position", 10.0);
    }
 
+   @Test
+   public void closeOpenPosition_calculatesAndUpdatedAvailableFunds() throws Exception {
+      when(clientService.getClientData("client_1")).thenReturn(createClient("client_1"));
+      openPositionsService.addOpenPositionForClient("client_1", openPosition1);
+      List<OpenPosition> clientPositions = openPositionsService.getOpenPositionsForClient("client_1");
+
+      openPositionsService.closeOpenPosition("client_1", clientPositions.get(0).getId(), 250.00);
+
+      ArgumentCaptor<String> clientIdCaptor2 = ArgumentCaptor.forClass(String.class);
+      ArgumentCaptor<Double> runningProfitAndLossCaptor = ArgumentCaptor.forClass(Double.class);
+      verify(clientService, times(1)).updateRunningProfitAndLoss(clientIdCaptor2.capture(), runningProfitAndLossCaptor.capture());
+      assertThat(clientIdCaptor2.getAllValues()).containsOnly("client_1");
+      assertThat(runningProfitAndLossCaptor.getValue()).isEqualTo(0);
+
+      ArgumentCaptor<String> clientIdCaptor = ArgumentCaptor.forClass(String.class);
+      ArgumentCaptor<Double> availableFundsCaptor = ArgumentCaptor.forClass(Double.class);
+      verify(clientService, times(2)).updateAvailableFunds(clientIdCaptor.capture(), availableFundsCaptor.capture());
+      assertThat(clientIdCaptor.getAllValues()).containsOnly("client_1");
+      assertThat(availableFundsCaptor.getAllValues()).contains(15345.0);
+   }
+
+   @Test
+   public void updateMarketPrice_shouldUpdateClientRunningProfitAndLossAndAvailableFunds() throws Exception {
+      initialiseClientPositions();
+
+      openPositionsService.updateMarketPrice("market_1", 200.00);
+
+      ArgumentCaptor<String> clientIdCaptor = ArgumentCaptor.forClass(String.class);
+      ArgumentCaptor<Double> sumProfitAndLossCaptor = ArgumentCaptor.forClass(Double.class);
+      verify(clientService, times(2)).updateRunningProfitAndLoss(clientIdCaptor.capture(), sumProfitAndLossCaptor.capture());
+      assertThat(clientIdCaptor.getAllValues()).containsOnly("client_1", "client_3");
+      assertThat(sumProfitAndLossCaptor.getAllValues()).containsOnly(1324.12, 18950.0);
+   }
+
    private void initialiseOpenPositions() {
       openPosition1 = OpenPosition.builder()
-         .id("pos_1")
-         .marketId("market_1")
-         .profitAndLoss(1234.55)
-         .openingPrice(100.00)
-         .buySize(12)
-         .build();
+            .id("pos_1")
+            .marketId("market_1")
+            .profitAndLoss(1234.55)
+            .openingPrice(100.00)
+            .buySize(12)
+            .build();
 
       openPosition2 = OpenPosition.builder()
-         .id("pos_2")
-         .marketId("market_2")
-         .profitAndLoss(124.12)
-         .openingPrice(140.00)
-         .buySize(1)
-         .build();
+            .id("pos_2")
+            .marketId("market_2")
+            .profitAndLoss(124.12)
+            .openingPrice(140.00)
+            .buySize(1)
+            .build();
 
       openPosition3 = OpenPosition.builder()
-         .id("pos_3")
-         .marketId("market_3")
-         .profitAndLoss(12.1)
-         .openingPrice(50.5)
-         .buySize(70)
-         .build();
+            .id("pos_3")
+            .marketId("market_3")
+            .profitAndLoss(12.1)
+            .openingPrice(50.5)
+            .buySize(70)
+            .build();
 
       openPosition4 = OpenPosition.builder()
-         .id("pos_4")
-         .marketId("market_1")
-         .profitAndLoss(134.00)
-         .openingPrice(10.5)
-         .buySize(100)
-         .build();
+            .id("pos_4")
+            .marketId("market_1")
+            .profitAndLoss(134.00)
+            .openingPrice(10.5)
+            .buySize(100)
+            .build();
 
       openPosition5 = OpenPosition.builder()
-         .id("pos_5")
-         .marketId("market_4")
-         .profitAndLoss(543.98)
-         .openingPrice(234.42)
-         .buySize(50)
-         .build();
+            .id("pos_5")
+            .marketId("market_4")
+            .profitAndLoss(543.98)
+            .openingPrice(234.42)
+            .buySize(50)
+            .build();
 
       openPosition6 = OpenPosition.builder()
-         .id("pos_6")
-         .marketId("market_1")
-         .profitAndLoss(12.00)
-         .openingPrice(250.00)
-         .buySize(12)
-         .build();
+            .id("pos_6")
+            .marketId("market_1")
+            .profitAndLoss(12.00)
+            .openingPrice(250.00)
+            .buySize(12)
+            .build();
    }
 
    private void initialiseClientPositions() throws Exception {
-      when(clientService.getClientDataFromMap("client_1")).thenReturn(createClient("client_1"));
-      when(clientService.getClientDataFromMap("client_2")).thenReturn(createClient("client_2"));
-      when(clientService.getClientDataFromMap("client_3")).thenReturn(createClient("client_3"));
+      when(clientService.getClientData("client_1")).thenReturn(createClient("client_1"));
+      when(clientService.getClientData("client_2")).thenReturn(createClient("client_2"));
+      when(clientService.getClientData("client_3")).thenReturn(createClient("client_3"));
 
       newArrayList(openPosition1, openPosition2).stream()
-         .forEach(openPosition -> {
-            try {
-               openPositionsService.addOpenPositionForClient("client_1", openPosition);
-            } catch (NoAvailableDataException e) {
-               e.printStackTrace();
-            }
-         });
+            .forEach(openPosition -> {
+               try {
+                  openPositionsService.addOpenPositionForClient("client_1", openPosition);
+               } catch (NoAvailableDataException e) {
+                  e.printStackTrace();
+               }
+            });
 
       newArrayList(openPosition3, openPosition2, openPosition5).stream()
-         .forEach(openPosition -> {
-            try {
-               openPositionsService.addOpenPositionForClient("client_2", openPosition);
-            } catch (NoAvailableDataException e) {
-               e.printStackTrace();
-            }
-         });
+            .forEach(openPosition -> {
+               try {
+                  openPositionsService.addOpenPositionForClient("client_2", openPosition);
+               } catch (NoAvailableDataException e) {
+                  e.printStackTrace();
+               }
+            });
 
       newArrayList(openPosition4).stream()
-         .forEach(openPosition -> {
-            try {
-               openPositionsService.addOpenPositionForClient("client_3", openPosition);
-            } catch (NoAvailableDataException e) {
-               e.printStackTrace();
-            }
-         });
+            .forEach(openPosition -> {
+               try {
+                  openPositionsService.addOpenPositionForClient("client_3", openPosition);
+               } catch (NoAvailableDataException e) {
+                  e.printStackTrace();
+               }
+            });
    }
 
    private Client createClient(String clientId) {
       return Client.builder()
-         .id(clientId)
-         .userName("username")
-         .funds(12345)
-         .build();
+            .id(clientId)
+            .userName("username")
+            .availableFunds(12345)
+            .runningProfitAndLoss(500)
+            .build();
    }
 
    private void assertOpenPosition(OpenPosition resultingOpenPosition, OpenPosition openPosition) {
-      assertEquals(resultingOpenPosition.getProfitAndLoss(), openPosition.getProfitAndLoss());
-      assertEquals(resultingOpenPosition.getBuySize(), openPosition.getBuySize());
-      assertEquals(resultingOpenPosition.getMarketId(), openPosition.getMarketId());
-      assertEquals(resultingOpenPosition.getOpeningPrice(), openPosition.getOpeningPrice());
+      assertThat(resultingOpenPosition.getProfitAndLoss()).isEqualTo(openPosition.getProfitAndLoss());
+      assertThat(resultingOpenPosition.getBuySize()).isEqualTo(openPosition.getBuySize());
+      assertThat(resultingOpenPosition.getMarketId()).isEqualTo(openPosition.getMarketId());
+      assertThat(resultingOpenPosition.getOpeningPrice()).isEqualTo(openPosition.getOpeningPrice());
    }
 
 }

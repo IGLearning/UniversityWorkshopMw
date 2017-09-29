@@ -30,6 +30,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>concurrentunit</artifactId>
+            <version>0.4.3</version>
+        </dependency>
+
         <!-- Data management -->
         <dependency>
             <groupId>org.projectlombok</groupId>

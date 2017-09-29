@@ -15,6 +15,8 @@ public class Client {
    private String id;
    private String userName;
    @Setter
-   private double funds;
+   private double availableFunds;
+   @Setter
+   private double runningProfitAndLoss;
 
 }
