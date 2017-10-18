@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-
+// test comment
 public class TestHelper {
 
    public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
