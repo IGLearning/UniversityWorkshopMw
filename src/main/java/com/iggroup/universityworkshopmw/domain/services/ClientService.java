@@ -49,6 +49,10 @@ public class ClientService {
       clientIdToClientModelMap.put(client.getId(), client);
    }
 
+   public Map<String, Client> getAllClients() {
+      return clientIdToClientModelMap;
+   }
+
    void updateRunningProfitAndLoss(String clientId, double sumOfPositionProfitAndLoss) throws NoAvailableDataException {
       Client client = getClientDataFromMap(clientId);
       double oldProfitAndLoss = client.getRunningProfitAndLoss();
