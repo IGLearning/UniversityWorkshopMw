@@ -25,7 +25,7 @@ public class MarketDataService {
 
    public List<Market> getAllMarkets() {
       final ArrayList<Market> markets = new ArrayList<>(marketDataCache.values());
-      log.info("Retrieving all markets={}", markets);
+//      log.info("Retrieving all markets={}", markets);
       return markets;
    }
 
