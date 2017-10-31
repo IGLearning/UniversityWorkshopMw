@@ -1,7 +1,6 @@
 package com.iggroup.universityworkshopmw.domain.services;
 
 import com.iggroup.universityworkshopmw.domain.model.Market;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Component
 public class PriceGeneratorService {
 
