@@ -50,7 +50,7 @@ public class MarketDataController {
          return new ResponseEntity<>(responseBody, OK);
 
       } catch (Exception e) {
-         log.info("Exception when retrieving all market data, exceptionMessage={}", e);
+         log.info("Exception when retrieving all market data, exceptionMessage=", e);
          return new ResponseEntity<>("Something went wrong when retrieving all market data", INTERNAL_SERVER_ERROR);
       }
    }

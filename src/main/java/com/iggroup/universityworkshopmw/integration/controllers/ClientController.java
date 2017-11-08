@@ -64,7 +64,7 @@ public class ClientController {
          return new ResponseEntity<>("Username=" + userName + " is already used. Please create another one", BAD_REQUEST);
 
       } catch (Exception e) {
-         log.info("Exception when creating new client, exceptionMessage={}", e);
+         log.info("Exception when creating new client, exceptionMessage=", e);
          return new ResponseEntity<>("Something went wrong when creating a new client", INTERNAL_SERVER_ERROR);
       }
    }
@@ -93,7 +93,7 @@ public class ClientController {
          return new ResponseEntity<>("No available client data for clientId=" + clientId, NOT_FOUND);
 
       } catch (Exception e) {
-         log.info("Exception when retrieving client data, exceptionMessage={}", e);
+         log.info("Exception when retrieving client data, exceptionMessage=", e);
          return new ResponseEntity<>("Something went wrong when retrieving client data", INTERNAL_SERVER_ERROR);
       }
    }
