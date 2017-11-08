@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static com.iggroup.universityworkshopmw.TestHelper.APPLICATION_JSON_UTF8;
 import static com.iggroup.universityworkshopmw.TestHelper.convertObjectToJsonBytes;
+import static com.iggroup.universityworkshopmw.domain.services.ClientService.INITIAL_FUNDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -77,7 +78,7 @@ public class ClientFlowIntegrationTest {
    }
 
    private void assertClient(String clientId, String content) throws NoAvailableDataException {
-      assertThat(content).contains("10000.0");
+      assertThat(content).contains(INITIAL_FUNDS + "");
       assertThat(content).contains("0.0");
 
       ArgumentCaptor<String> clientIdCaptor = ArgumentCaptor.forClass(String.class);
@@ -93,7 +94,7 @@ public class ClientFlowIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", containsString("client_")))
-            .andExpect(jsonPath("$.availableFunds", is(10000.0)))
+            .andExpect(jsonPath("$.availableFunds", is(INITIAL_FUNDS)))
             .andReturn();
 
       return mvcResultFunds.getResponse().getContentAsString();
@@ -119,7 +120,7 @@ public class ClientFlowIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", containsString("client_")))
-            .andExpect(jsonPath("$.availableFunds", is(10000.0)))
+            .andExpect(jsonPath("$.availableFunds", is(INITIAL_FUNDS)))
             .andExpect(jsonPath("$.runningProfitAndLoss", is(0.0))).andReturn();
 
       clientId = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.id");

@@ -19,7 +19,7 @@ public class ClientService {
 
    private Map<String, Client> clientIdToClientModelMap = new ConcurrentHashMap<>();
    private final String ID_PREFIX = "client_";
-   private final double INITIAL_FUNDS = 25000;
+   public static final double INITIAL_FUNDS = 25000;
 
    public Client storeNewClient(Client client) throws DuplicatedDataException {
       checkIfDuplicateUsername(client);

@@ -6,6 +6,7 @@ import com.iggroup.universityworkshopmw.domain.model.Client;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.iggroup.universityworkshopmw.domain.services.ClientService.INITIAL_FUNDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClientServiceTest {
@@ -36,7 +37,7 @@ public class ClientServiceTest {
 
       Client returnClient1 = clientService.storeNewClient(client1);
 
-      assertThat(returnClient1.getAvailableFunds()).isEqualTo(10000);
+      assertThat(returnClient1.getAvailableFunds()).isEqualTo(INITIAL_FUNDS);
       assertThat(returnClient1.getRunningProfitAndLoss()).isEqualTo(0);
    }
 
@@ -49,7 +50,7 @@ public class ClientServiceTest {
       Client actual = clientService.getClientData(clientId);
 
       assertThat(actual).isEqualToIgnoringGivenFields(expected, "id", "availableFunds");
-      assertThat(actual.getAvailableFunds()).isEqualTo(10000.0);
+      assertThat(actual.getAvailableFunds()).isEqualTo(INITIAL_FUNDS);
    }
 
    @Test(expected = NoAvailableDataException.class)

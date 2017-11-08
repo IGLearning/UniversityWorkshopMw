@@ -2,29 +2,22 @@ package com.iggroup.universityworkshopmw.integration.controllers;
 
 import com.iggroup.universityworkshopmw.domain.model.Market;
 import com.iggroup.universityworkshopmw.domain.services.MarketDataService;
+import com.iggroup.universityworkshopmw.integration.dto.MarketDto;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.iggroup.universityworkshopmw.TestHelper.APPLICATION_JSON_UTF8;
 import static com.iggroup.universityworkshopmw.domain.enums.MarketName.GOLD;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class MarketDataControllerTest {
 
-   private MockMvc mockMvc;
    private MarketDataService marketDataService;
    private MarketDataController marketDataController;
 
@@ -32,7 +25,6 @@ public class MarketDataControllerTest {
    public void setup() {
       marketDataService = mock(MarketDataService.class);
       marketDataController = new MarketDataController(marketDataService);
-      mockMvc = MockMvcBuilders.standaloneSetup(marketDataController).build();
    }
 
    @Test
@@ -47,13 +39,13 @@ public class MarketDataControllerTest {
       when(marketDataService.getAllMarkets()).thenReturn(listOfMarkets);
 
       //When
-      mockMvc.perform(get("/marketData/allMarkets"))
-            //Then
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-            .andExpect(jsonPath("$.[0].id", is("market_1")))
-            .andExpect(jsonPath("$.[0].marketName", is(GOLD.getName())))
-            .andExpect(jsonPath("$.[0].currentPrice", is(400.0)));
+      final ResponseEntity<?> responseEntity = marketDataController.getAllMarketData();
+
+      //Then
+      final List<MarketDto> marketDtos = (List<MarketDto>) responseEntity.getBody();
+      assertThat(marketDtos.get(0).getId()).isEqualTo("market_1");
+      assertThat(marketDtos.get(0).getMarketName()).isEqualTo(GOLD.getName());
+      assertThat(marketDtos.get(0).getCurrentPrice()).isEqualTo(400.0);
    }
 
    @Test
@@ -62,13 +54,10 @@ public class MarketDataControllerTest {
       when(marketDataService.getAllMarkets()).thenThrow(new RuntimeException("Server exception!"));
 
       //When
-      MvcResult mvcResult = mockMvc.perform(get("/marketData/allMarkets"))
-            //Then
-            .andExpect(status().isInternalServerError())
-            .andReturn();
+      final ResponseEntity<?> responseEntity = marketDataController.getAllMarketData();
 
-      String content = mvcResult.getResponse().getContentAsString();
-      assertThat(content).isEqualTo("Something went wrong when retrieving all market data");
+      assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+      assertThat(responseEntity.getBody()).isEqualTo("Something went wrong when retrieving all market data");
    }
 
 }
