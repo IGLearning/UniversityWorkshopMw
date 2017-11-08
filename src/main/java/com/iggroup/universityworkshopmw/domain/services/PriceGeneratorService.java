@@ -13,7 +13,7 @@ import java.util.Map;
 @Component
 public class PriceGeneratorService {
 
-   private final NormalDistribution normalDistribution = new NormalDistribution(5, 40);
+   private final NormalDistribution normalDistribution = new NormalDistribution(0, 40);
    private MarketDataService marketDataService;
 
    public PriceGeneratorService(MarketDataService marketDataService) {
