@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static com.iggroup.universityworkshopmw.TestHelper.APPLICATION_JSON_UTF8;
 import static com.iggroup.universityworkshopmw.TestHelper.convertObjectToJsonBytes;
+import static com.iggroup.universityworkshopmw.domain.services.ClientService.INITIAL_FUNDS;
 import static com.iggroup.universityworkshopmw.integration.transformers.OpenPositionTransformer.transform;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
@@ -63,7 +64,7 @@ public class OpenPositionFlowIntegrationTest {
       final Double openingPrice = openingPriceCaptor.getResult();
       String openPositionId = JsonPath.read(addOPResponse.getResponse().getContentAsString(), "$.openPositionId");
       verify(openPositionsService, times(1)).addOpenPositionForClient(clientId, transform(openPositionDto));
-      verify(clientService, times(1)).updateAvailableFunds(clientId, 10000 - (buySize * openingPrice));
+      verify(clientService, times(1)).updateAvailableFunds(clientId, INITIAL_FUNDS - (buySize * openingPrice));
 
 
       //Get open positions
@@ -92,7 +93,7 @@ public class OpenPositionFlowIntegrationTest {
       String content = deleteOPResponse.getResponse().getContentAsString();
 
       final double profitAndLoss = (buySize * closingPriceCaptor.getResult()) - (buySize * openingPrice);
-      final double updatedAvailableFunds = 10000 + profitAndLoss;
+      final double updatedAvailableFunds = INITIAL_FUNDS + profitAndLoss;
 
       assertThat(Double.parseDouble(content)).isEqualTo(profitAndLoss);
       verify(openPositionsService, times(1)).closeOpenPosition(clientId, openPositionId);
@@ -107,7 +108,7 @@ public class OpenPositionFlowIntegrationTest {
    private Client createClient() {
       return Client.builder()
             .id("client_1")
-            .availableFunds(10000)
+            .availableFunds(INITIAL_FUNDS)
             .runningProfitAndLoss(10000)
             .userName("username")
             .build();
