@@ -7,8 +7,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
-@EnableWebMvc
-@ComponentScan
 @EnableScheduling
 public class UniversityWorkshopMwApplication {
    public static void main(String[] args) {
