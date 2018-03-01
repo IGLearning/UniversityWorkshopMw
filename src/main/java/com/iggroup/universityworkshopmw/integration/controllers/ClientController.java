@@ -14,13 +14,11 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
@@ -52,6 +50,7 @@ public class ClientController {
                message = "Couldn't create client")
    })
    @PostMapping("/createClient")
+   @CrossOrigin
    public ResponseEntity<?> createClient(@RequestBody CreateClientDto clientDto) {
       try {
          Client clientTransformed = ClientTransformer.transform(clientDto);
@@ -82,6 +81,7 @@ public class ClientController {
          @ApiResponse(code = HTTP_INTERNAL_ERROR,
                message = "Couldn't get client data")
    })
+   @CrossOrigin
    @GetMapping("/{clientId}")
    public ResponseEntity<?> getClient(@PathVariable("clientId") String clientId) {
       try {
