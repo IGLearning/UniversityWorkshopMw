@@ -98,4 +98,34 @@ public class ClientController {
       }
    }
 
+   @ApiOperation(value = "Get a client by username",
+         notes = "Gets data for a single client, by username",
+         response = ClientDto.class)
+   @ApiResponses(value = {
+         @ApiResponse(code = HTTP_OK,
+               message = "Successfully retrieved client data"),
+         @ApiResponse(code = HTTP_BAD_REQUEST,
+               message = "Couldn't recognise request"),
+         @ApiResponse(code = HTTP_NOT_FOUND,
+               message = "Couldn't find client for clientUsername provided"),
+         @ApiResponse(code = HTTP_INTERNAL_ERROR,
+               message = "Couldn't get client data")
+   })
+   @CrossOrigin
+   @GetMapping("/login/{clientUsername}")
+   public ResponseEntity<?> getClientByUserName(@PathVariable("clientUsername") String username) {
+      try {
+         ClientDto responseBody = ClientDtoTransformer.transform(clientService.getClientDataByUsername(username));
+         return new ResponseEntity<>(responseBody, OK);
+
+      } catch (NoAvailableDataException e) {
+         log.info("No available client data in clientIdToClientModelMap for clientUsername={}", username);
+         return new ResponseEntity<>("No available client data for clientUsername=" + username, NOT_FOUND);
+
+      } catch (Exception e) {
+         log.info("Exception when retrieving client data, exceptionMessage=", e);
+         return new ResponseEntity<>("Something went wrong when retrieving client data", INTERNAL_SERVER_ERROR);
+      }
+   }
+
 }

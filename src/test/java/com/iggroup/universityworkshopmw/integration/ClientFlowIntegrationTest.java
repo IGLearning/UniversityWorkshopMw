@@ -52,9 +52,10 @@ public class ClientFlowIntegrationTest {
 
    @Test
    public void clientFlow() throws Exception {
+      final String userName = "userName";
       ClientDto clientDto = ClientDto.builder()
             .id(null)
-            .userName("userName")
+            .userName(userName)
             .availableFunds(null)
             .runningProfitAndLoss(null)
             .build();
@@ -63,6 +64,9 @@ public class ClientFlowIntegrationTest {
       assertClient();
       String content = mockGetClient(clientId);
       assertClient(clientId, content);
+      String contentByUsername = mockGetClientByUsername(userName);
+      assertClientByUsername(userName, contentByUsername);
+
       final String contentException = mockClientDataException();
 
       assertThat(contentException).isEqualTo("No available client data for clientId=client_12345");
@@ -88,9 +92,32 @@ public class ClientFlowIntegrationTest {
       assertThat(capturedClientId).isEqualTo(clientId);
    }
 
+   private void assertClientByUsername(String username, String content) throws NoAvailableDataException {
+      assertThat(content).contains(INITIAL_FUNDS + "");
+      assertThat(content).contains("0.0");
+
+      ArgumentCaptor<String> clientUsernameCaptor = ArgumentCaptor.forClass(String.class);
+      verify(clientService, times(1)).getClientDataByUsername(clientUsernameCaptor.capture());
+
+      String clientUsernameCaptorValue = clientUsernameCaptor.getValue();
+      assertThat(clientUsernameCaptorValue).isEqualTo(username);
+   }
+
    private String mockGetClient(String clientId) throws Exception {
       MvcResult mvcResultFunds = mockMvc
             .perform(get("/client/" + clientId))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+            .andExpect(jsonPath("$.id", containsString("client_")))
+            .andExpect(jsonPath("$.availableFunds", is(INITIAL_FUNDS)))
+            .andReturn();
+
+      return mvcResultFunds.getResponse().getContentAsString();
+   }
+
+   private String mockGetClientByUsername(String username) throws Exception {
+      MvcResult mvcResultFunds = mockMvc
+            .perform(get("/client/login/" + username))
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8))
             .andExpect(jsonPath("$.id", containsString("client_")))

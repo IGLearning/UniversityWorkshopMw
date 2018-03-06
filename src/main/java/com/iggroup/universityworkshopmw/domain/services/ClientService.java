@@ -43,6 +43,15 @@ public class ClientService {
       return client;
    }
 
+   public Client getClientDataByUsername(String username) throws NoAvailableDataException {
+      final Optional<Client> optionalClient = clientIdToClientModelMap.values()
+            .stream()
+            .filter(client -> client.getUserName().equals(username))
+            .findFirst();
+
+      return optionalClient.orElseThrow(() -> new NoAvailableDataException("No available client data in clientIdToClientModelMap for clientUsername=" + username));
+   }
+
    public void updateAvailableFunds(String clientId, double updatedAvailableFunds) throws NoAvailableDataException {
       Client client = getClientDataFromMap(clientId);
       client.setAvailableFunds(updatedAvailableFunds);
@@ -89,5 +98,4 @@ public class ClientService {
          throw new DuplicatedDataException("Duplicated username found: " + client.getUserName());
       }
    }
-
 }
