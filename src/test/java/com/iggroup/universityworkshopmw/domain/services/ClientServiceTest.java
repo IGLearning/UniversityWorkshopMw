@@ -61,6 +61,24 @@ public class ClientServiceTest {
    }
 
    @Test
+   public void getClientDataByUsername_getsDataForClientUsername() throws NoAvailableDataException, DuplicatedDataException {
+      final String userName1 = "userName1";
+      final Client expected = createClient(userName1);
+      clientService.storeNewClient(expected);
+
+      Client actual = clientService.getClientDataByUsername(userName1);
+
+      assertThat(actual).isEqualToIgnoringGivenFields(expected, "id", "availableFunds");
+   }
+
+   @Test(expected = NoAvailableDataException.class)
+   public void getClientDataByUsername_handlesMapContainingNoClientDataForClientUsername() throws NoAvailableDataException {
+      String username = "usernameNotInMap";
+
+      clientService.getClientDataByUsername(username);
+   }
+
+   @Test
    public void updateAvailableFunds_updatesAvailableFunds() throws NoAvailableDataException, DuplicatedDataException {
       Client returnClient1 = clientService.storeNewClient(createClient("userName1"));
       String clientId = returnClient1.getId();

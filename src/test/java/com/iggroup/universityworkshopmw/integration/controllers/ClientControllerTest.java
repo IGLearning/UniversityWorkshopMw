@@ -120,4 +120,50 @@ public class ClientControllerTest {
       assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
       assertThat("No available client data for clientId=unknownId").isEqualTo(responseEntity.getBody());
    }
+
+   @Test
+   public void getClientByUsername_returnsOkCodeAndClientData() throws Exception {
+      final String username = "username";
+      Client retrievedClient = Client.builder()
+            .id("client_12345")
+            .userName("username")
+            .availableFunds(400.0)
+            .runningProfitAndLoss(0)
+            .build();
+      when(clientService.getClientDataByUsername(anyString())).thenReturn(retrievedClient);
+
+      final ResponseEntity<?> responseEntity = clientController.getClientByUserName(username);
+      final ClientDto body = (ClientDto) responseEntity.getBody();
+      assertThat(body.getId()).isEqualTo("client_12345");
+      assertThat(body.getUserName()).isEqualTo("username");
+      assertThat(body.getAvailableFunds()).isEqualTo(400.0);
+      assertThat(body.getRunningProfitAndLoss()).isEqualTo(0);
+      assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+      ArgumentCaptor<String> clientUsernameCaptor = forClass(String.class);
+      verify(clientService, times(1)).getClientDataByUsername(clientUsernameCaptor.capture());
+      verifyNoMoreInteractions(clientService);
+
+      String id = clientUsernameCaptor.getValue();
+      assertThat(id).isEqualTo(username);
+   }
+
+   @Test
+   public void getClientByUsername_handlesAnyException_returnsServerErrorAndInfoString() throws Exception {
+      final String username = "username";
+      when(clientService.getClientDataByUsername(anyString())).thenThrow(new RuntimeException("Server exception!"));
+
+      final ResponseEntity<?> responseEntity = clientController.getClientByUserName(username);
+      assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+      assertThat("Something went wrong when retrieving client data").isEqualTo(responseEntity.getBody());
+   }
+
+   @Test
+   public void getClientByUsername_handlesNoAvailableDataException_returnsServerErrorAndInfoString() throws Exception {
+      when(clientService.getClientDataByUsername(anyString())).thenThrow(new NoAvailableDataException("No available data!"));
+
+      final ResponseEntity<?> responseEntity = clientController.getClientByUserName("unknownUsername");
+      assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+      assertThat("No available client data for clientUsername=unknownUsername").isEqualTo(responseEntity.getBody());
+   }
 }
