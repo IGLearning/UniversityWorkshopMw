@@ -24,7 +24,10 @@ public class ClientService {
    public Client storeNewClient(Client client) throws DuplicatedDataException {
       checkIfDuplicateUsername(client);
 
-      String uniqueId = checkIfDuplicateClientId();
+      String uniqueId = checkIfDuplicateClientId(); // TODO: 08/03/2018 Was causing a null exception here, or in the enrichedClient
+
+//      could check if duplicate name, if it was a duplicate name, but when adding a new client a null exception was thrown.
+      // did not print the added new client log
 
       Client enrichedClient = Client.builder()
             .id(uniqueId)
