@@ -1,8 +1,12 @@
 # Middleware workshop
 
-### Testing your endpoints - Swagger
-* [Swagger UI](https://glacial-plateau-36826.herokuapp.com/workshop/api/swagger-ui.html)
-*  [Swagger docs](https://glacial-plateau-36826.herokuapp.com/workshop/v2/api-docs)
+### Client Flow
+![Screenshot](/src/main/docs/ClientFlow.PNG)
 
+![Screenshot](/src/main/docs/ClientFlowEndpoints.PNG)
 
-url = https://glacial-plateau-36826.herokuapp.com/
+### Swagger
+
+Local = http://localhost:8085/workshop/api/swagger-ui.html
+
+HerokuApp = https://glacial-plateau-36826.herokuapp.com/workshop/api/swagger-ui.html
